@@ -12,6 +12,12 @@ public class BinomialHeap {
 	private HeapNode min;
 	private int size;
 
+	public BinomialHeap() {
+		this.first = null;
+		this.min = null;
+		this.size = 0;
+	}
+
 	public BinomialHeap(HeapNode first, HeapNode min, int size) {
 		this.first = first;
 		this.min = min;
@@ -157,18 +163,14 @@ public class BinomialHeap {
 			this.min = heap2.min;
 			this.size = heap2.size;
 		} else {
-			HeapNode newFirst = this.first;
-			
+
 			HeapNode root = this.first;
-			// check for each root in the heap
+			// for each root in the heap
 			do {
 
 				root = root.getSibling();
 			} while (root != this.first);
-			
-			
-			
-			
+
 			link(min, first);
 			if (heap2.findMin() < this.findMin()) {
 				this.min = heap2.min;
@@ -268,9 +270,10 @@ public class BinomialHeap {
 		HeapNode root = this.first;
 		// check for each root in the heap
 		do {
-			// check: if x is y's parent - x.key < y.key
-
 			// check: the tree is valid binomial tree
+			if (!isValidTree(root, root.getDegree())) {
+				return false;
+			}
 
 			// check: for each i there is only one tree of rank i
 			if (degrees[root.getDegree()]) {
@@ -281,6 +284,31 @@ public class BinomialHeap {
 			root = root.getSibling();
 		} while (root != this.first);
 
+		return true;
+	}
+
+	/**
+	 * checks if root (of degree k) is a valid Binomial Tree valid Binomial Tree
+	 * = if x is y's parent - x.key < y.key and all children of root are valid
+	 * Binomial Trees of degrees 0,...,k-1
+	 */
+	private boolean isValidTree(HeapNode root, int degree) {
+		if (root.getDegree() != degree) {
+			return false;
+		}
+
+		int key = root.getKey();
+		HeapNode child = root.getChild().getSibling();
+
+		for (int i = 0; i < root.degree; i++) {
+			if (child.getKey() < key) {
+				return false;
+			}
+			if (!isValidTree(child, i)) {
+				return false;
+			}
+			child = child.getSibling();
+		}
 		return true;
 	}
 
