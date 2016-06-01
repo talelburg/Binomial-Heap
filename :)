@@ -132,6 +132,11 @@ public class BinomialHeap {
 	 * link two binomial trees of the same degree
 	 */
 	private HeapNode link(HeapNode root1, HeapNode root2) {
+		if (root1 == null) {
+			return root2;
+		} else if (root2 == null) {
+			return root1;
+		}
 		if (root1.getKey() > root2.getKey()) {
 			// replace root1 and root2 pointers
 			HeapNode temp = root1;
@@ -150,6 +155,29 @@ public class BinomialHeap {
 	}
 
 	/**
+	 * returns the root of the tree of degree "degree" in the heap if none
+	 * returns null
+	 */
+	private HeapNode findTree(int degree) {
+		HeapNode root = this.first;
+		if (maxTreeRank() < degree) {
+			return null;
+		}
+
+		// check each root in the heap
+		do {
+			if (root.getDegree() == degree) {
+				return root;
+			}
+			if (root.getDegree() > degree) {
+				return null;
+			}
+			root = root.getSibling();
+		} while (root != this.first);
+		return null;
+	}
+
+	/**
 	 * public void meld (BinomialHeap heap2)
 	 *
 	 * Meld the heap with heap2
@@ -163,13 +191,14 @@ public class BinomialHeap {
 			this.min = heap2.min;
 			this.size = heap2.size;
 		} else {
+			int maxdegree = Math.max(maxTreeRank(), heap2.maxTreeRank());
+			HeapNode root1, root2, root3 = null;
 
-			HeapNode root = this.first;
-			// for each root in the heap
-			do {
+			for (int i = 0; i < maxdegree + 1; i++) {
+				root1 = this.findTree(i);
+				root2 = heap2.findTree(i);
 
-				root = root.getSibling();
-			} while (root != this.first);
+			}
 
 			link(min, first);
 			if (heap2.findMin() < this.findMin()) {
@@ -300,7 +329,7 @@ public class BinomialHeap {
 		int key = root.getKey();
 		HeapNode child = root.getChild().getSibling();
 
-		for (int i = 0; i < root.degree; i++) {
+		for (int i = 0; i < degree; i++) {
 			if (child.getKey() < key) {
 				return false;
 			}
