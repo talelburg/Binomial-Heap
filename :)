@@ -269,7 +269,7 @@ public class BinomialHeap {
 		if (empty()) {
 			return -1;
 		}
-		
+
 		HeapNode prev = this.first;
 		HeapNode x = prev.getSibling();
 		do {
@@ -277,7 +277,7 @@ public class BinomialHeap {
 			x = x.getSibling();
 		} while (x != this.first);
 
-		return x.getDegree();
+		return prev.getDegree();
 	}
 
 	/**
