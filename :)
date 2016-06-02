@@ -94,7 +94,7 @@ public class BinomialHeap {
 					newMin = x;
 				}
 				x = x.getSibling();
-			} while (!x.equals(this.first));
+			} while (!x.equals(this.min));
 
 			// if min was first, fix pointer
 			if (first.equals(this.min)) {
@@ -343,7 +343,7 @@ public class BinomialHeap {
 			degrees[root.getDegree()] = true;
 
 			root = root.getSibling();
-		} while (root.equals(this.first));
+		} while (!root.equals(this.first));
 
 		return true;
 	}
