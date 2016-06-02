@@ -86,16 +86,15 @@ public class BinomialHeap {
 
 		if (this.min.getSibling() != null) {
 			// find new minimum of the remaining heap
-			newMin = this.first;
+
+			newMin = this.min.getSibling();
 			x = newMin.getSibling();
-			while (x != this.first) {
-				if (x != this.min) {
-					if (x.getKey() < newMin.getKey()) {
-						newMin = x;
-					}
-					x = x.getSibling();
+			do {
+				if (x.getKey() < newMin.getKey()) {
+					newMin = x;
 				}
-			}
+				x = x.getSibling();
+			} while (x != this.min);
 
 			// if min was first, assign new first pointer
 			if (this.first == this.min) {
@@ -194,7 +193,7 @@ public class BinomialHeap {
 			int maxdegree = Math.max(maxTreeRank(), heap2.maxTreeRank());
 			HeapNode root1, root2, root3 = null, newFirst = null, current = null, linked = null;
 
-			for (int i = 0; i < maxdegree + 2; i++) {
+			for (int i = 0; i < maxdegree + 1; i++) {
 				root1 = this.findTree(i);
 				root2 = heap2.findTree(i);
 				root3 = linked;
@@ -257,16 +256,7 @@ public class BinomialHeap {
 		if (empty()) {
 			return -1;
 		}
-		HeapNode x = this.first;
-		int minDegree = x.getDegree();
-		do {
-			if (x.getDegree() < minDegree) {
-				minDegree = x.getDegree();
-			}
-			x = x.getSibling();
-		} while (x != this.first);
-		
-		return minDegree;
+		return this.first.getDegree();
 	}
 
 	/**
@@ -279,16 +269,15 @@ public class BinomialHeap {
 		if (empty()) {
 			return -1;
 		}
-		HeapNode x = this.first;
-		int maxDegree = x.getDegree();
+		
+		HeapNode prev = this.first;
+		HeapNode x = prev.getSibling();
 		do {
-			if (x.getDegree() > maxDegree) {
-				maxDegree = x.getDegree();
-			}
+			prev = x;
 			x = x.getSibling();
 		} while (x != this.first);
-		
-		return maxDegree;
+
+		return x.getDegree();
 	}
 
 	/**
