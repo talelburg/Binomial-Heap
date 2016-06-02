@@ -136,7 +136,8 @@ public class BinomialHeap {
 	private HeapNode link(HeapNode root1, HeapNode root2) {
 		if (root1 == null) {
 			return root2;
-		} else if (root2 == null) {
+		} 
+		if (root2 == null) {
 			return root1;
 		}
 		if (root1.getKey() > root2.getKey()) {
@@ -210,7 +211,6 @@ public class BinomialHeap {
 					linked = link(root1, root3);
 				} else {
 					linked = link(root1, root2);
-
 					if (newFirst == null) {
 						newFirst = root3;
 					} else {
@@ -419,25 +419,7 @@ public class BinomialHeap {
 		if (empty()) {
 			return "[]";
 		}
-		String ret = "[";
-		HeapNode root = this.first;
-		// check for each root in the heap
-		do {
-			if (root.getDegree() == 0) {
-				ret += "[" + root.getKey() + "]";
-			} else {
-				HeapNode child = root.getChild().getSibling();
-				ret += "[" + root.getKey() + ", ";
-				for (int i = 0; i < child.getDegree(); i++) {
-					ret += child.toString();
-					child = child.getSibling();
-				}
-				ret += "]";
-			}
-			root = root.getSibling();
-		} while (!root.equals(this.first));
-		ret += "]";
-		return ret;
+		return this.first.toString();
 	}
 
 	/**
@@ -520,6 +502,28 @@ public class BinomialHeap {
 
 		private BinomialHeap getOuterType() {
 			return BinomialHeap.this;
+		}
+		
+		public String toString() {
+			String ret = "[";
+			HeapNode root = this;
+			// check for each root in the heap
+			do {
+				if (root.getDegree() == 0) {
+					ret += "[" + root.getKey() + "]";
+				} else {
+					HeapNode child = root.getChild().getSibling();
+					ret += "[" + root.getKey() + ", ";
+					for (int i = 0; i < root.getDegree(); i++) {
+						ret += child.toString();
+						child = child.getSibling();
+					}
+					ret += "]";
+				}
+				root = root.getSibling();
+			} while (!root.equals(this));
+			ret += "]";
+			return ret;
 		}
 	}
 }
