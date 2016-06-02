@@ -202,10 +202,12 @@ public class BinomialHeap {
 			HeapNode root1, root2, root3 = null, newFirst = null, current = null, linked = null, added = null;
 
 			for (int i = 0; i < maxdegree + 1; i++) {
+				added = null;
 				root1 = this.findTree(i);
 				root2 = heap2.findTree(i);
 				root3 = linked;
-
+				linked = null;
+				
 				if (root1 != null && root2 != null && root3 != null) {
 					linked = link(root1, root2);
 					if (newFirst == null) {
@@ -223,6 +225,7 @@ public class BinomialHeap {
 						}
 					} else if (root2 == null) {
 						if (root1 != null && root3 != null) {
+							this.first = this.first.getSibling();
 							linked = link(root1, root3);
 						} else {
 							added = link(root1, root3);
@@ -230,6 +233,7 @@ public class BinomialHeap {
 
 					} else if (root3 == null) {
 						if (root1 != null && root2 != null) {
+							this.first = this.first.getSibling();
 							linked = link(root1, root2);
 						} else {
 							added = link(root1, root2);
@@ -445,10 +449,7 @@ public class BinomialHeap {
 	}
 
 	public String toString() {
-		if (empty()) {
-			return "[]";
-		}
-		return this.first.toString();
+		return Integer.toBinaryString(size);
 	}
 
 	/**
@@ -534,25 +535,7 @@ public class BinomialHeap {
 		}
 
 		public String toString() {
-			String ret = "[";
-			HeapNode root = this;
-			// check for each root in the heap
-			do {
-				if (root.getDegree() == 0) {
-					ret += "[" + root.getKey() + "]";
-				} else {
-					HeapNode child = root.getChild().getSibling();
-					ret += "[" + root.getKey() + ", ";
-					for (int i = 0; i < root.getDegree(); i++) {
-						ret += child.toString();
-						child = child.getSibling();
-					}
-					ret += "]";
-				}
-				root = root.getSibling();
-			} while (!root.equals(this));
-			ret += "]";
-			return ret;
+			return this.getKey() + ", child: " + (this.child == null ? "null" : this.child.getKey()) + ", sibling " + (this.sibling == null ? "null" : this.sibling.getKey());
 		}
 	}
 }
