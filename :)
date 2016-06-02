@@ -131,12 +131,15 @@ public class BinomialHeap {
 	}
 
 	/**
-	 * link two binomial trees of the same degree
+	 * link two binomial trees of the same degree (k-1) and return tree of
+	 * degree k
+	 * 
+	 * if one of them is null return the other
 	 */
 	private HeapNode link(HeapNode root1, HeapNode root2) {
 		if (root1 == null) {
 			return root2;
-		} 
+		}
 		if (root2 == null) {
 			return root1;
 		}
@@ -196,20 +199,14 @@ public class BinomialHeap {
 			this.size = heap2.size;
 		} else {
 			int maxdegree = Math.max(maxTreeRank(), heap2.maxTreeRank());
-			HeapNode root1, root2, root3 = null, newFirst = null, current = null, linked = null;
+			HeapNode root1, root2, root3 = null, newFirst = null, current = null, linked = null, added = null;
 
 			for (int i = 0; i < maxdegree + 1; i++) {
 				root1 = this.findTree(i);
 				root2 = heap2.findTree(i);
 				root3 = linked;
 
-				if (root3 == null) {
-					linked = link(root1, root2);
-				} else if (root1 == null) {
-					linked = link(root2, root3);
-				} else if (root2 == null) {
-					linked = link(root1, root3);
-				} else {
+				if (root1 != null && root2 != null && root3 != null) {
 					linked = link(root1, root2);
 					if (newFirst == null) {
 						newFirst = root3;
@@ -217,16 +214,48 @@ public class BinomialHeap {
 						current.setSibling(root3);
 					}
 					current = root3;
+				} else {
+					if (root1 == null) {
+						if (root2 != null && root3 != null) {
+							linked = link(root2, root3);
+						} else {
+							added = link(root2, root3);
+						}
+					} else if (root2 == null) {
+						if (root1 != null && root3 != null) {
+							linked = link(root1, root3);
+						} else {
+							added = link(root1, root3);
+						}
+
+					} else if (root3 == null) {
+						if (root1 != null && root2 != null) {
+							linked = link(root1, root2);
+						} else {
+							added = link(root1, root2);
+						}
+					}
+
+					if (added != null) {
+						if (newFirst == null) {
+							newFirst = added;
+						} else {
+							current.setSibling(added);
+						}
+						current = added;
+					}
 				}
 			}
 
 			// to add the last one
-			if (newFirst == null) {
-				newFirst = linked;
-			} else {
-				current.setSibling(linked);
+			if (linked != null) {
+				if (newFirst == null) {
+					newFirst = linked;
+				} else {
+					current.setSibling(linked);
+				}
+				current = linked;
 			}
-			current = linked;
 
 			// to make the list circular
 			current.setSibling(newFirst);
@@ -503,7 +532,7 @@ public class BinomialHeap {
 		private BinomialHeap getOuterType() {
 			return BinomialHeap.this;
 		}
-		
+
 		public String toString() {
 			String ret = "[";
 			HeapNode root = this;
