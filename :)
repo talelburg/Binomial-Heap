@@ -84,7 +84,7 @@ public class BinomialHeap {
 			newHeap = new BinomialHeap(null, null, 0);
 		}
 
-		if (this.min.getSibling() != null) {
+		if (!this.min.getSibling().equals(this.min)) {
 			// find new minimum of the remaining heap
 
 			newMin = this.min.getSibling();
@@ -94,16 +94,16 @@ public class BinomialHeap {
 					newMin = x;
 				}
 				x = x.getSibling();
-			} while (x != this.min);
+			} while (!x.equals(this.first));
 
-			// if min was first, assign new first pointer
-			if (this.first == this.min) {
+			// if min was first, fix pointer
+			if (first.equals(this.min)) {
 				this.first = this.first.getSibling();
 			}
 
-			// delete sibling pointers to min
+			// delete sibling pointer to min
 			x = this.first;
-			while (x.getSibling() != this.min) {
+			while (!x.getSibling().equals(this.min)) {
 				x = x.getSibling();
 			}
 			x.setSibling(this.min.getSibling());
@@ -124,6 +124,9 @@ public class BinomialHeap {
 	 *
 	 */
 	public int findMin() {
+		if (empty()) {
+			return -1;
+		}
 		return this.min.getKey();
 	}
 
@@ -172,7 +175,7 @@ public class BinomialHeap {
 				return null;
 			}
 			root = root.getSibling();
-		} while (root != this.first);
+		} while (!root.equals(this.first));
 		return null;
 	}
 
@@ -275,7 +278,7 @@ public class BinomialHeap {
 		do {
 			prev = x;
 			x = x.getSibling();
-		} while (x != this.first);
+		} while (!x.equals(this.first));
 
 		return prev.getDegree();
 	}
@@ -293,7 +296,7 @@ public class BinomialHeap {
 		do {
 			arr[x.getDegree()] = true;
 			x = x.getSibling();
-		} while (x != this.first);
+		} while (!x.equals(this.first));
 		return arr;
 	}
 
@@ -340,7 +343,7 @@ public class BinomialHeap {
 			degrees[root.getDegree()] = true;
 
 			root = root.getSibling();
-		} while (root != this.first);
+		} while (root.equals(this.first));
 
 		return true;
 	}
@@ -410,6 +413,32 @@ public class BinomialHeap {
 			this.min = x;
 		}
 	}
+	
+	public String toString() {
+		if (empty()) {
+			return "[]";
+		}
+		String ret = "[";
+		HeapNode root = this.first;
+		// check for each root in the heap
+		do {
+			if (root.getDegree() == 0) {
+				ret += "[" + root.getKey() + "]";
+			}
+			else {
+				HeapNode child = root.getChild().getSibling();
+				ret += "[" + root.getKey() + ", ";
+				for (int i = 0; i < child.getDegree(); i++) {
+					ret += child.toString();
+					child = child.getSibling();
+				}
+				ret += "]";
+			}
+			root = root.getSibling();
+		} while (!root.equals(this.first));
+		ret += "]";
+		return ret;
+	}
 
 	/**
 	 * public class HeapNode
@@ -456,6 +485,22 @@ public class BinomialHeap {
 		public void setDegree(int degree) {
 			this.degree = degree;
 		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			HeapNode other = (HeapNode) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (key != other.key)
+				return false;
+			return true;
+		}
 
 		public int getKey() {
 			return this.key;
@@ -473,5 +518,8 @@ public class BinomialHeap {
 			this.degree = 0;
 		}
 
+		private BinomialHeap getOuterType() {
+			return BinomialHeap.this;
+		}		
 	}
 }
