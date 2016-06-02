@@ -7,7 +7,7 @@ import java.util.HashMap;
  * exercise from previous semester.
  */
 public class BinomialHeap {
-	private static HashMap<Integer, HeapNode> hashMap;
+	private static HashMap<Integer, HeapNode> hashMap = new HashMap<>();
 	private HeapNode first;
 	private HeapNode min;
 	private int size;
@@ -159,11 +159,11 @@ public class BinomialHeap {
 	 * returns null
 	 */
 	private HeapNode findTree(int degree) {
-		HeapNode root = this.first;
-		if (maxTreeRank() < degree) {
+		if (degree > maxTreeRank() || degree < minTreeRank()) {
 			return null;
 		}
 
+		HeapNode root = this.first;
 		// check each root in the heap
 		do {
 			if (root.getDegree() == degree) {
@@ -192,20 +192,49 @@ public class BinomialHeap {
 			this.size = heap2.size;
 		} else {
 			int maxdegree = Math.max(maxTreeRank(), heap2.maxTreeRank());
-			HeapNode root1, root2, root3 = null;
+			HeapNode root1, root2, root3 = null, newFirst = null, current = null, linked = null;
 
-			for (int i = 0; i < maxdegree + 1; i++) {
+			for (int i = 0; i < maxdegree + 2; i++) {
 				root1 = this.findTree(i);
 				root2 = heap2.findTree(i);
+				root3 = linked;
 
+				if (root3 == null) {
+					linked = link(root1, root2);
+				} else if (root1 == null) {
+					linked = link(root2, root3);
+				} else if (root2 == null) {
+					linked = link(root1, root3);
+				} else {
+					linked = link(root1, root2);
+
+					if (newFirst == null) {
+						newFirst = root3;
+					} else {
+						current.setSibling(root3);
+					}
+					current = root3;
+				}
 			}
 
-			link(min, first);
+			// to add the last one
+			if (newFirst == null) {
+				newFirst = linked;
+			} else {
+				current.setSibling(linked);
+			}
+			current = linked;
+
+			// to make the list circular
+			current.setSibling(newFirst);
+
+			this.first = newFirst;
 			if (heap2.findMin() < this.findMin()) {
 				this.min = heap2.min;
 			}
 			this.size += heap2.size;
 		}
+
 	}
 
 	/**
@@ -225,14 +254,18 @@ public class BinomialHeap {
 	 * 
 	 */
 	public int minTreeRank() {
-		int minDegree = this.first.getDegree();
-		HeapNode x = this.first.getSibling();
-		while (x != this.first) {
+		if (empty()) {
+			return -1;
+		}
+		HeapNode x = this.first;
+		int minDegree = x.getDegree();
+		do {
 			if (x.getDegree() < minDegree) {
 				minDegree = x.getDegree();
 			}
 			x = x.getSibling();
-		}
+		} while (x != this.first);
+		
 		return minDegree;
 	}
 
@@ -243,14 +276,18 @@ public class BinomialHeap {
 	 * 
 	 */
 	private int maxTreeRank() {
-		int maxDegree = this.first.getDegree();
-		HeapNode x = this.first.getSibling();
-		while (x != this.first) {
+		if (empty()) {
+			return -1;
+		}
+		HeapNode x = this.first;
+		int maxDegree = x.getDegree();
+		do {
 			if (x.getDegree() > maxDegree) {
 				maxDegree = x.getDegree();
 			}
 			x = x.getSibling();
-		}
+		} while (x != this.first);
+		
 		return maxDegree;
 	}
 
@@ -294,6 +331,9 @@ public class BinomialHeap {
 	 * 
 	 */
 	public boolean isValid() {
+		if (this.size == 0) {
+			return true;
+		}
 		boolean[] degrees = new boolean[maxTreeRank() + 1];
 
 		HeapNode root = this.first;
@@ -325,7 +365,9 @@ public class BinomialHeap {
 		if (root.getDegree() != degree) {
 			return false;
 		}
-
+		if (degree == 0) {
+			return true;
+		}
 		int key = root.getKey();
 		HeapNode child = root.getChild().getSibling();
 
@@ -443,3 +485,4 @@ public class BinomialHeap {
 		}
 
 	}
+}
