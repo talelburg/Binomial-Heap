@@ -114,7 +114,7 @@ public class BinomialHeapTest {
         }
 
         public String toString() {
-            return String.format("%s, Faild: %s, Error: %s, "+
+            return String.format("%s, Failed: %s, Error: %s, "+
                     "Exception: %s, Call stack: %s", name, 
                     failed ? "Y" : "N", error, eMessage, eTrace);
         }
@@ -325,6 +325,7 @@ public class BinomialHeapTest {
 
             for (int v : vals) {
                 heap1.insert(v);
+                System.out.println(heap1.toString());
             }
             Arrays.sort(vals);
             for (int v : vals) {
@@ -360,7 +361,7 @@ public class BinomialHeapTest {
                     break;
                 }
                 for (int j = 0; j < i; ++j) {
-                    heap1.insert(i);
+                    heap1.insert(j);
                     ++size;
                     if (heap1.empty()) {
                         setFailed(
@@ -414,7 +415,7 @@ public class BinomialHeapTest {
                     break;
                 }
                 for (int j = 0; j < i; ++j) {
-                    heap1.insert(i);
+                    heap1.insert(j);
                     ++nInsert;
                     if (!heap1.isValid()) {
                         setFailed(
@@ -548,7 +549,7 @@ public class BinomialHeapTest {
                 boolean[] res = heap1.binaryRep();
                 if (res.length != binaryArr.length) {
                     setFailed("binary size length is "+binaryArr.length+
-                            "but result length is "+ res.length);
+                            " but result length is "+ res.length);
                     break;
                 }
                 boolean unequal = false;
