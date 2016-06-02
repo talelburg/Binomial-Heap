@@ -202,6 +202,28 @@ public class BinomialHeap {
 			HeapNode root1, root2, root3 = null, newFirst = null, current = null, linked = null, added = null, x;
 
 			for (int i = 0; i < maxdegree + 1; i++) {
+				if (this.first == null) {
+					x = heap2.first;
+					if (x == null) {
+						break;
+					}
+					do {
+						current.setSibling(x);
+						current = x;
+						x = x.getSibling();
+					} while (!x.equals(heap2.first));
+					break;
+				} else if (heap2.first == null) {
+					x = this.first;
+					do {
+						current.setSibling(x);
+						current = x;
+						x = x.getSibling();
+					} while (!x.equals(this.first));
+
+					break;
+				}
+
 				added = null;
 				root1 = this.findTree(i);
 				root2 = heap2.findTree(i);
@@ -209,21 +231,30 @@ public class BinomialHeap {
 				linked = null;
 
 				if (root1 != null && root2 != null && root3 != null) {
+
+					if (root1.getSibling().equals(root1)) {
+						this.first = null;
+					} else {
+						x = root1;
+						while (!x.getSibling().equals(root1)) {
+							x = x.getSibling();
+						}
+						x.setSibling(root1.getSibling());
+						this.first = root1.getSibling();
+					}
+
+					if (root2.getSibling().equals(root2)) {
+						heap2.first = null;
+					} else {
+						x = root2;
+						while (!x.getSibling().equals(root2)) {
+							x = x.getSibling();
+						}
+						x.setSibling(root2.getSibling());
+						heap2.first = root2.getSibling();
+					}
+
 					linked = link(root1, root2);
-
-					x = root1;
-					while (!x.getSibling().equals(root1)) {
-						x = x.getSibling();
-					}
-					x.setSibling(root1.getSibling());
-					this.first = root1.getSibling();
-
-					x = root2;
-					while (!x.getSibling().equals(root2)) {
-						x = x.getSibling();
-					}
-					x.setSibling(root2.getSibling());
-					heap2.first = root2.getSibling();
 
 					if (newFirst == null) {
 						newFirst = root3;
@@ -234,19 +265,9 @@ public class BinomialHeap {
 				} else {
 					if (root1 == null) {
 						if (root2 != null && root3 != null) {
-							linked = link(root2, root3);
-
-							x = root2;
-							while (!x.getSibling().equals(root2)) {
-								x = x.getSibling();
-							}
-							x.setSibling(root2.getSibling());
-							heap2.first = root2.getSibling();
-
-						} else {
-							added = link(root2, root3);
-
-							if (root2 != null) {
+							if (root2.getSibling().equals(root2)) {
+								heap2.first = null;
+							} else {
 								x = root2;
 								while (!x.getSibling().equals(root2)) {
 									x = x.getSibling();
@@ -254,21 +275,58 @@ public class BinomialHeap {
 								x.setSibling(root2.getSibling());
 								heap2.first = root2.getSibling();
 							}
+							linked = link(root2, root3);
+
+						} else {
+
+							if (root2 != null) {
+								if (root2.getSibling().equals(root2)) {
+									heap2.first = null;
+								} else {
+									x = root2;
+									while (!x.getSibling().equals(root2)) {
+										x = x.getSibling();
+									}
+									x.setSibling(root2.getSibling());
+									heap2.first = root2.getSibling();
+								}
+							}
+
+							added = link(root2, root3);
+
 						}
 					} else if (root2 == null) {
 						if (root3 != null) {
+							if (root1.getSibling().equals(root1)) {
+								this.first = null;
+							} else {
+								x = root1;
+								while (!x.getSibling().equals(root1)) {
+									x = x.getSibling();
+								}
+								x.setSibling(root1.getSibling());
+								this.first = root1.getSibling();
+							}
 							linked = link(root1, root3);
 
-							x = root1;
-							while (!x.getSibling().equals(root1)) {
-								x = x.getSibling();
-							}
-							x.setSibling(root1.getSibling());
-							this.first = root1.getSibling();
-
 						} else {
+							if (root1.getSibling().equals(root1)) {
+								this.first = null;
+							} else {
+								x = root1;
+								while (!x.getSibling().equals(root1)) {
+									x = x.getSibling();
+								}
+								x.setSibling(root1.getSibling());
+								this.first = root1.getSibling();
+							}
 							added = root1;
 
+						}
+					} else {
+						if (root1.getSibling().equals(root1)) {
+							this.first = null;
+						} else {
 							x = root1;
 							while (!x.getSibling().equals(root1)) {
 								x = x.getSibling();
@@ -276,22 +334,17 @@ public class BinomialHeap {
 							x.setSibling(root1.getSibling());
 							this.first = root1.getSibling();
 						}
-					} else {
+						if (root2.getSibling().equals(root2)) {
+							heap2.first = null;
+						} else {
+							x = root2;
+							while (!x.getSibling().equals(root2)) {
+								x = x.getSibling();
+							}
+							x.setSibling(root2.getSibling());
+							heap2.first = root2.getSibling();
+						}
 						linked = link(root1, root2);
-
-						x = root1;
-						while (!x.getSibling().equals(root1)) {
-							x = x.getSibling();
-						}
-						x.setSibling(root1.getSibling());
-						this.first = root1.getSibling();
-
-						x = root2;
-						while (!x.getSibling().equals(root2)) {
-							x = x.getSibling();
-						}
-						x.setSibling(root2.getSibling());
-						heap2.first = root2.getSibling();
 					}
 				}
 
