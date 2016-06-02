@@ -153,6 +153,7 @@ public class BinomialHeap {
 			root1.getChild().setSibling(root2);
 		}
 		root1.setChild(root2);
+		root1.setDegree(root1.getDegree() + 1);
 		return root1;
 	}
 
@@ -413,7 +414,7 @@ public class BinomialHeap {
 			this.min = x;
 		}
 	}
-	
+
 	public String toString() {
 		if (empty()) {
 			return "[]";
@@ -424,8 +425,7 @@ public class BinomialHeap {
 		do {
 			if (root.getDegree() == 0) {
 				ret += "[" + root.getKey() + "]";
-			}
-			else {
+			} else {
 				HeapNode child = root.getChild().getSibling();
 				ret += "[" + root.getKey() + ", ";
 				for (int i = 0; i < child.getDegree(); i++) {
@@ -485,7 +485,7 @@ public class BinomialHeap {
 		public void setDegree(int degree) {
 			this.degree = degree;
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -520,6 +520,6 @@ public class BinomialHeap {
 
 		private BinomialHeap getOuterType() {
 			return BinomialHeap.this;
-		}		
+		}
 	}
 }
