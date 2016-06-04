@@ -5,20 +5,147 @@ import java.util.HashMap;
  *
  * An implementation of binomial heap over non-negative integers. Based on
  * exercise from previous semester.
+ * 
+ * Tal Elburg, 208571471 (talelburg)
+ * Keren Solodkin, 316127893 (solodkin)
+ *
  */
 public class BinomialHeap {
 	private static HashMap<Integer, HeapNode> hashMap = new HashMap<>();
 	private HeapNode first;
 	private HeapNode min;
 	private int size;
+	
+	/**
+	 * public class HeapNode
+	 * 
+	 * This class represents a single node in the heap. Each node has 
+	 * the following attributes: its key, its degree (i.e. number of children),
+	 * its parent, its child (meaning maximal degree child if node has multiple),
+	 * its next (next highest degree child of this node's parent - if this
+	 * node is of maximal degree among the children, its next is that with minimal degree),
+	 * and its prev (next lowest degree child of this node's parent - if this
+	 * node is of minimal degree among the children, its prev is that with maximal degree).
+	 * 
+	 */
+	public class HeapNode {
+		private HeapNode parent, child, next, prev;
+		private int key;
+		private int degree;
+		
+		/**
+		 * public HeapNode(int key)
+		 * 
+		 * Standard constructor, initializes the key to input, degree to 0,
+		 * and sets various pointers to null.
+		 * 
+		 */
+		public HeapNode(int key) {
+			this.parent = null;
+			this.child = null;
+			this.next = null;
+			this.prev = null;
+			this.key = key;
+			this.degree = 0;
+		}
+		
+		/**
+		 * Standard getters and setters for various fields.
+		 */
+		public HeapNode getParent() {
+			return parent;
+		}
 
+		public void setParent(HeapNode parent) {
+			this.parent = parent;
+		}
+
+		public HeapNode getChild() {
+			return child;
+		}
+
+		public void setChild(HeapNode child) {
+			this.child = child;
+		}
+
+		public HeapNode getNext() {
+			return next;
+		}
+
+		public void setNext(HeapNode next) {
+			this.next = next;
+		}
+		
+		public HeapNode getPrev() {
+			return prev;
+		}
+
+		public void setPrev(HeapNode prev) {
+			this.prev = prev;
+		}
+
+		public int getDegree() {
+			return degree;
+		}
+
+		public void setDegree(int degree) {
+			this.degree = degree;
+		}
+		
+		public int getKey() {
+			return this.key;
+		}
+
+		public void setKey(int key) {
+			this.key = key;
+		}
+		
+		/** 
+		 * public boolean equlas(Object obj)
+		 * 
+		 * Compares this with obj, and returns true if and only if 
+		 * this.key == obj.key. This utilises the assumption that 
+		 * the nodes have distinct keys, and therefore comparison
+		 * can be done solely by keys.
+		 * 
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			HeapNode other = (HeapNode) obj;
+			if (key != other.key)
+				return false;
+			return true;
+		}
+	}
+	
+	/**
+	 * public BinomialHeap()
+	 * 
+	 * Standard constructor, initializes pointers to null and size to 0 -
+	 * representing an empty heap.
+	 * 
+	 */
 	public BinomialHeap() {
 		this.first = null;
 		this.min = null;
 		this.size = 0;
 	}
+	
+	/**
+	 * private BiomialHeap(HeapNode first, HeapNode min, int size)
+	 * 
+	 * Secondary constructor. Initializes a new heap with the fields 
+	 * containing input values. Inner use only.
+	 * 
+	 */
 
-	public BinomialHeap(HeapNode first, HeapNode min, int size) {
+	private BinomialHeap(HeapNode first, HeapNode min, int size) {
 		this.first = first;
 		this.min = min;
 		this.size = size;
@@ -39,87 +166,100 @@ public class BinomialHeap {
 	/**
 	 * public void insert(int value)
 	 *
-	 * Insert value into the heap
+	 * Insert value into the heap.
 	 *
 	 */
 	public void insert(int value) {
+		// Set up new node
 		HeapNode x = new HeapNode(value);
-		x.setSibling(x);
+		x.setNext(x);
+		x.setPrev(x);
+		
+		// Add new node to hashMap
 		hashMap.put(value, x);
+		
+		// Create a new heap, containing only the new node
 		BinomialHeap newHeap = new BinomialHeap(x, x, 1);
+		
+		// Meld this with the new heap
 		meld(newHeap);
 	}
 
 	/**
 	 * public void deleteMin()
 	 *
-	 * Delete the minimum value
+	 * Delete the minimum value.
 	 *
 	 */
 	public void deleteMin() {
+		// Remove the minimum from hashMap
 		hashMap.remove(this.min.getKey());
 		int minSize = (int) Math.pow(2, this.min.getDegree());
-		this.size -= minSize;
+		this.size -= minSize; // Update this.size to reflect deletion
+		
+		// Declare variables to create new heap with
 		HeapNode newFirst, newMin, x;
 		BinomialHeap newHeap;
 
-		if (this.min.getChild() != null) {
-			newFirst = this.min.getChild().getSibling();
+		if (this.min.getChild() != null) { // Min has children
+			// Set up fields for new heap
+			newFirst = this.min.getChild().getNext(); // Child is of maximal degree, so next is of minimal degree
 			newMin = newFirst;
 			x = newFirst;
 
-			// find the minimum of min's children
+			// Find the minimum of min's children - i.e. new heap's min
 			for (int i = 0; i < this.min.getDegree(); i++) {
-				x.setParent(null);
+				x.setParent(null); // While we're at this, disconnect min's children from it
 				if (x.getKey() < newMin.getKey()) {
 					newMin = x;
 				}
-				x = x.getSibling();
+				x = x.getNext();
 			}
-
+			
+			// All fields now properly initialized, create new heap
 			newHeap = new BinomialHeap(newFirst, newMin, minSize - 1);
-		} else {
-			// send an empty heap to meld function
+		} else { // Min has no children
+			// Initialize new heap as empty
 			newHeap = new BinomialHeap(null, null, 0);
 		}
 
-		if (!this.min.getSibling().equals(this.min)) {
-			// find new minimum of the remaining heap
-
-			newMin = this.min.getSibling();
+		
+		if (!this.min.getNext().equals(this.min)) { // If min was not the only root in the heap
+			
+			// Find new minimum of the heap
+			newMin = this.min.getNext();
 			x = newMin;
 			do {
 				if (x.getKey() < newMin.getKey()) {
 					newMin = x;
 				}
-				x = x.getSibling();
+				x = x.getNext();
 			} while (!x.equals(this.min));
 
-			// if min was first, fix pointer
+			// If min was first, fix pointer
 			if (first.equals(this.min)) {
-				this.first = this.first.getSibling();
+				this.first = this.first.getNext();
 			}
 
-			// delete sibling pointer to min
-			x = this.first;
-			while (!x.getSibling().equals(this.min)) {
-				x = x.getSibling();
-			}
-			x.setSibling(this.min.getSibling());
+			// Delete next pointer to min
+			this.min.getPrev().setNext(this.min.getNext());
+			this.min.getNext().setPrev(this.min.getPrev());
 
+			// Set min to its proper value
 			this.min = newMin;
-		} else {
+		} else { // If min was the only root in the heap - heap now empty until meld
 			this.first = null;
 			this.min = null;
 		}
 
+		// All is ready, meld the new heap with this
 		meld(newHeap);
 	}
 
 	/**
 	 * public int findMin()
 	 *
-	 * Return the minimum value
+	 * Return the minimum value.
 	 *
 	 */
 	public int findMin() {
@@ -130,56 +270,43 @@ public class BinomialHeap {
 	}
 
 	/**
-	 * link two binomial trees of the same degree (k-1) and return tree of
-	 * degree k
 	 * 
-	 * if one of them is null return the other
+	 * private HeapNode link(HeapNode root1, HeapNode root2)
+	 * 
+	 * Precondition: inputs are not null.
+	 * Link two binomial trees of the same degree (k-1) and return tree of
+	 * degree k.
+	 * 
 	 */
 	private HeapNode link(HeapNode root1, HeapNode root2) {
-		if (root1 == null) {
-			return root2;
-		}
-		if (root2 == null) {
-			return root1;
-		}
+		// Make sure root1.key < root2.key
 		if (root1.getKey() > root2.getKey()) {
-			// replace root1 and root2 pointers
+			// Reverse root1 and root2 pointers
 			HeapNode temp = root1;
 			root1 = root2;
 			root2 = temp;
 		}
-		if (root1.getChild() == null) {
-			// if root1 has no children
-			root2.setSibling(root2);
-		} else {
-			root2.setSibling(root1.getChild().getSibling());
-			root1.getChild().setSibling(root2);
+		
+		if (root1.getChild() == null) { // If root1 has no children
+			// Now root2 will be root1's only child, so its next and prev are both itself
+			root2.setNext(root2);
+			root2.setPrev(root2);
+		} else { // If root1 has children
+			// Add root2 in its proper place among root1's children
+			root2.setNext(root1.getChild().getNext());
+			root2.setPrev(root1.getChild());
+			root1.getChild().getNext().setPrev(root2);
+			root1.getChild().setNext(root2);
 		}
+		
+		// Set pointers to proper values
 		root1.setChild(root2);
 		root2.setParent(root1);
-		root1.setDegree(root1.getDegree() + 1);
-		return root1;
-	}
-
-	/**
-	 * returns the root of the tree of degree "degree" in the heap if none
-	 * returns null
-	 */
-	private HeapNode findTree(int degree) {
-		if (this.empty()) {
-			return null;
-		}
-		if (degree < this.minTreeRank() || degree > this.maxTreeRank()) {
-			return null;
-		}
-		HeapNode x = this.first;
-		do {
-			if (x.getDegree() == degree) {
-				return x;
-			}
-			x = x.getSibling();
-		} while (!x.equals(this.first));
-		return null;
+		
+		// We added another child to root1, so degree increases
+		root1.setDegree(root1.getDegree() + 1); 
+		
+		return root1; // All done
 	}
 
 	/**
@@ -189,189 +316,213 @@ public class BinomialHeap {
 	 *
 	 */
 	public void meld(BinomialHeap heap2) {
-
+		// If other heap is empty this doesn't change
 		if (heap2.empty()) {
 			return;
-		} else if (empty()) {
+		} else if (empty()) { // If this is empty this becomes heap2
 			this.first = heap2.first;
 			this.min = heap2.min;
 			this.size = heap2.size;
-		} else {
-			HeapNode newMin = (this.findMin() < heap2.findMin() ? this.min : heap2.min);
+		} else { // Both heaps non-empty
+			// We will create a new heap to establish proper connections between melded trees
+			
+			// Initialize new fields that we can already determine - we do not care about 
+			// these later, so we don't update them in new heap
+			HeapNode newMin = (this.findMin() < heap2.findMin() ? this.min : heap2.min); 
 			int newSize = this.size() + heap2.size();
-			int maxDeg = Math.max(maxTreeRank(), heap2.maxTreeRank()) + 1;
+			
+			// Maximal degree that might exist in the new heap
+			int maxDeg = Math.max(this.first.getPrev().getDegree(), heap2.first.getPrev().getDegree()) + 1; 
+			
+			// Variables to help us build the new heap 
 			HeapNode root1, root2, root3, carry = null, current = null;
+			
+			// Create new heap
 			BinomialHeap newHeap = new BinomialHeap();
-			for (int i = 0; i < maxDeg; i++) {
-				root1 = this.findTree(i);
-				root2 = heap2.findTree(i);
+			for (int i = 0; i < maxDeg; i++) { // For every degree that might exist in new heap
+				
+				// Look for trees of degree i in this and in heap2 
+				root1 = (this.first == null ? null : this.first.getDegree() == i ? this.first : null);
+				root2 = (heap2.first == null ? null : heap2.first.getDegree() == i ? heap2.first : null);
+				
+				// Remember the carry and reset it
 				root3 = carry;
 				carry = null;
+				
+				// Start the linking process
 				if (root1 == null) {
 					if (root2 == null) {
-						if (root3 != null) {
-							if (newHeap.empty()) {
-								root3.setSibling(root3);
+						if (root3 != null) { // No trees of degree i in original heaps, with carry
+							if (newHeap.empty()) { // If this is the first tree to be inserted to new heap
+								// Set root3 as only root, and increase size so new heap is no longer empty
+								root3.setNext(root3);
+								root3.setPrev(root3);
 								newHeap.first = root3;
 								current = newHeap.first;
 								newHeap.size++;
-							} else {
-								current.setSibling(root3);
-								root3.setSibling(newHeap.first);
-								current = current.getSibling();
+							} else { // If there are already trees in new heap
+								// Add root3 as the largest tree in new heap
+								current.setNext(root3);
+								root3.setPrev(current);
+								root3.setNext(newHeap.first);
+								newHeap.first.setPrev(root3);
+								current = current.getNext();
 							}
 						}
-					} else {
-						if (root2.getSibling().equals(root2)) {
+					} else { // No tree of degree i in this, heap2 has such a tree
+						// Remove the relevant tree from heap2
+						if (root2.getNext().equals(root2)) { // If root2 is the only tree in heap2
+							// Now heap2 is empty
 							heap2.first = null;
 							heap2.min = null;
 							heap2.size = 0;
-						} else {
-							HeapNode x = root2.getSibling();
-							while (!x.getSibling().equals(root2)) {
-								x = x.getSibling();
-							}
-							x.setSibling(root2.getSibling());
-							heap2.first = root2.getSibling();
-							HeapNode min = heap2.first;
-							x = heap2.first;
-							while (!x.getSibling().equals(heap2.first)) {
-								if (x.getKey() < min.getKey()) {
-									min = x;
-								}
-								x = x.getSibling();
-							}
-							heap2.min = min;
-							heap2.size -= Math.pow(2, root2.getDegree());
-							root2.setSibling(null);
+						} else { // There are other trees in heap2
+							// Remove next and prev pointers to root2
+							root2.getPrev().setNext(root2.getNext());
+							root2.getNext().setPrev(root2.getPrev());
+							
+							// Since root2 was definitely heap2.first, update that field
+							heap2.first = root2.getNext();
+							
+							// Disconnect root2
+							root2.setNext(null);
+							root2.setPrev(null);
 						}
-						if (root3 == null) {
-							if (newHeap.empty()) {
-								root2.setSibling(root2);
+						if (root3 == null) { // No carry
+							if (newHeap.empty()) { // If this is the first tree to be inserted to new heap
+								// Set root2 as only root, and increase size so new heap is no longer empty
+								root2.setNext(root2);
+								root2.setPrev(root2);
 								newHeap.first = root2;
 								current = newHeap.first;
 								newHeap.size++;
-							} else {
-								current.setSibling(root2);
-								root2.setSibling(newHeap.first);
-								current = current.getSibling();
+							} else { // If there are already trees in new heap
+								// Add root1 as the largest tree in new heap
+								current.setNext(root2);
+								root2.setPrev(current);
+								root2.setNext(newHeap.first);
+								newHeap.first.setPrev(root2);
+								current = current.getNext();
 							}
-						} else {
+						} else { // There was carry, so there will be again
 							carry = link(root2, root3);
 						}
-					}
-				} else if (root2 == null) {
-					if (root1.getSibling().equals(root1)) {
+					} // From now on can assume root1 != null, meaning this has a tree of degree i
+				} else if (root2 == null) { // No tree of degree i in heap2
+					if (root1.getNext().equals(root1)) { // If root1 is the only tree in this
+						// Now this is empty
 						this.first = null;
 						this.min = null;
 						this.size = 0;
-					} else {
-						HeapNode x = root1.getSibling();
-						while (!x.getSibling().equals(root1)) {
-							x = x.getSibling();
-						}
-						x.setSibling(root1.getSibling());
-						this.first = root1.getSibling();
-						HeapNode min = this.first;
-						x = this.first;
-						while (!x.getSibling().equals(this.first)) {
-							if (x.getKey() < min.getKey()) {
-								min = x;
-							}
-							x = x.getSibling();
-						}
-						this.min = min;
-						this.size -= Math.pow(2, root1.getDegree());
-						root1.setSibling(null);
+					} else { // There are other trees in this
+						// Remove next and prev pointers to root1
+						root1.getPrev().setNext(root1.getNext());
+						root1.getNext().setPrev(root1.getPrev());
+						
+						// Since root1 was definitely this.first, update that field
+						this.first = root1.getNext();
+						
+						// Disconnect root1
+						root1.setNext(null);
+						root1.setPrev(null);
 					}
-					if (root3 == null) {
-						if (newHeap.empty()) {
-							root1.setSibling(root1);
+					if (root3 == null) { // No carry
+						if (newHeap.empty()) { // If this is the first tree to be inserted to new heap
+							// Set root1 as only root, and increase size so new heap is no longer empty
+							root1.setNext(root1);
+							root1.setPrev(root1);
 							newHeap.first = root1;
 							current = newHeap.first;
 							newHeap.size++;
-						} else {
-							current.setSibling(root1);
-							root1.setSibling(newHeap.first);
-							current = current.getSibling();
+						} else { // If there are already trees in new heap
+							// Add root1 as the largest tree in new heap
+							current.setNext(root1);
+							root1.setPrev(current);
+							root1.setNext(newHeap.first);
+							newHeap.first.setPrev(root1);
+							current = current.getNext();
 						}
-					} else {
+					} else { // There was carry, so there will be again
 						carry = link(root1, root3);
-					}
-				} else {
-					if (root1.getSibling().equals(root1)) {
+					} // From now on can assume root2 != null, meaning heap2 has a tree of degree i
+				} else { // There are trees of degree i in both this and heap2
+					if (root1.getNext().equals(root1)) { // If root1 is the only tree in this
+						// Now this is empty
 						this.first = null;
 						this.min = null;
 						this.size = 0;
-					} else {
-						HeapNode x = root1.getSibling();
-						while (!x.getSibling().equals(root1)) {
-							x = x.getSibling();
-						}
-						x.setSibling(root1.getSibling());
-						this.first = root1.getSibling();
-						HeapNode min = this.first;
-						x = this.first;
-						while (!x.getSibling().equals(this.first)) {
-							if (x.getKey() < min.getKey()) {
-								min = x;
-							}
-							x = x.getSibling();
-						}
-						this.min = min;
-						this.size -= Math.pow(2, root1.getDegree());
-						root1.setSibling(null);
+					} else { // There are other trees in this
+						// Remove next and prev pointers to root1
+						root1.getPrev().setNext(root1.getNext());
+						root1.getNext().setPrev(root1.getPrev());
+						
+						// Since root1 was definitely this.first, update that field
+						this.first = root1.getNext();
+						
+						// Disconnect root1
+						root1.setNext(null);
+						root1.setPrev(null);
 					}
-					if (root2.getSibling().equals(root2)) {
+					
+					if (root2.getNext().equals(root2)) { // If root2 is the only tree in heap2
+						// Now heap2 is empty
 						heap2.first = null;
 						heap2.min = null;
 						heap2.size = 0;
-					} else {
-						HeapNode x = root2.getSibling();
-						while (!x.getSibling().equals(root2)) {
-							x = x.getSibling();
-						}
-						x.setSibling(root2.getSibling());
-						heap2.first = root2.getSibling();
-						HeapNode min = heap2.first;
-						x = heap2.first;
-						while (!x.getSibling().equals(heap2.first)) {
-							if (x.getKey() < min.getKey()) {
-								min = x;
-							}
-							x = x.getSibling();
-						}
-						heap2.min = min;
-						heap2.size -= Math.pow(2, root2.getDegree());
-						root2.setSibling(null);
+					} else { // There are other trees in heap2
+						// Remove next and prev pointers to root2
+						root2.getPrev().setNext(root2.getNext());
+						root2.getNext().setPrev(root2.getPrev());
+						
+						// Since root2 was definitely heap2.first, update that field
+						heap2.first = root2.getNext();
+						
+						// Disconnect root2
+						root2.setNext(null);
+						root2.setPrev(null);
 					}
+					
+					// There will definitely be carry
 					carry = link(root1, root2);
-					if (root3 != null) {
-						if (newHeap.empty()) {
-							root3.setSibling(root3);
+					if (root3 != null) { // There was carry - add it to new heap
+						if (newHeap.empty()) { // If this is the first tree to be inserted to new heap
+							// Set root3 as only root, and increase size so new heap is no longer empty
+							root3.setNext(root3);
+							root3.setPrev(root3);
 							newHeap.first = root3;
 							current = newHeap.first;
 							newHeap.size++;
-						} else {
-							current.setSibling(root3);
-							root3.setSibling(newHeap.first);
-							current = current.getSibling();
+						} else { // If there are already trees in new heap
+							// Add root3 as the largest tree in new heap
+							current.setNext(root3);
+							root3.setPrev(current);
+							root3.setNext(newHeap.first);
+							newHeap.first.setPrev(root3);
+							current = current.getNext();
 						}
 					}
 				}
 			}
-			if (carry != null) {
-				if (newHeap.empty()) {
-					carry.setSibling(carry);
+			if (carry != null) { // Therewas carry in last step, need to add it
+				if (newHeap.empty()) { // If this is the first tree to be inserted to new heap
+					// Set carry as only root, and increase size so new heap is no longer empty
+					carry.setNext(carry);
+					carry.setPrev(carry);
 					newHeap.first = carry;
-				} else {
-					current.setSibling(carry);
-					carry.setSibling(newHeap.first);
+				} else { // If there are already trees in new heap
+					// Add carry as the largest tree in new heap
+					current.setNext(carry);
+					carry.setPrev(current);
+					carry.setNext(newHeap.first);
+					newHeap.first.setPrev(carry);
 				}
 			}
+			
+			// Update fields for this to what they should be
 			this.first = newHeap.first;
 			this.size = newSize;
 			this.min = newMin;
+			// All done
 		}
 	}
 
@@ -399,39 +550,18 @@ public class BinomialHeap {
 	}
 
 	/**
-	 * public int maxTreeRank()
-	 *
-	 * Return the maximum rank of a tree in the heap.
-	 * 
-	 */
-	private int maxTreeRank() {
-		if (empty()) {
-			return -1;
-		}
-
-		HeapNode prev = this.first;
-		HeapNode x = prev.getSibling();
-		do {
-			prev = x;
-			x = x.getSibling();
-		} while (!x.equals(this.first));
-
-		return prev.getDegree();
-	}
-
-	/**
 	 * public boolean[] binaryRep()
 	 *
 	 * Return an array containing the binary representation of the heap.
 	 * 
 	 */
 	public boolean[] binaryRep() {
-		boolean[] arr = new boolean[maxTreeRank() + 1];
+		boolean[] arr = new boolean[this.first.getPrev().getDegree() + 1];
 
 		HeapNode x = this.first;
-		do {
+		do { // Mark degrees that exist in the tree
 			arr[x.getDegree()] = true;
-			x = x.getSibling();
+			x = x.getNext();
 		} while (!x.equals(this.first));
 		return arr;
 	}
@@ -443,10 +573,12 @@ public class BinomialHeap {
 	 * 
 	 */
 	public void arrayToHeap(int[] array) {
+		// Delete anything that was previously in heap
 		this.first = null;
 		this.min = null;
 		this.size = 0;
 
+		// Insert keys one by one 
 		for (int i = 0; i < array.length; i++) {
 			insert(array[i]);
 		}
@@ -459,55 +591,72 @@ public class BinomialHeap {
 	 * 
 	 */
 	public boolean isValid() {
+		// Empty heap is valid
 		if (this.size == 0) {
 			return true;
 		}
-		boolean[] degrees = new boolean[maxTreeRank() + 1];
+		// Array to make sure there are no two trees of the same degree
+		boolean[] degrees = new boolean[this.first.getPrev().getDegree() + 1]; // Array to make sure there are no
 
 		HeapNode root = this.first;
-		// check for each root in the heap
+		// Check for each root in the heap
 		do {
-			// check: the tree is valid binomial tree
+			// Check root is a valid binomial tree
 			if (!isValidTree(root, root.getDegree())) {
 				return false;
 			}
 
-			// check: for each i there is only one tree of rank i
+			// Check that there were no previous trees of this degree
 			if (degrees[root.getDegree()]) {
 				return false;
 			}
+			
+			// Mark this degree as seen
 			degrees[root.getDegree()] = true;
 
-			root = root.getSibling();
+			root = root.getNext();
 		} while (!root.equals(this.first));
-
+		
+		// All went well
 		return true;
 	}
 
 	/**
-	 * checks if root (of degree k) is a valid Binomial Tree valid Binomial Tree
-	 * = if x is y's parent - x.key < y.key and all children of root are valid
-	 * Binomial Trees of degrees 0,...,k-1
+	 * private boolean isValidTree(HeapNode root, int degree)
+	 * 
+	 * Checks if root is a valid binomial tree of specified degree, i.e. for every node
+	 * y such that y.parent = root, it holds that y.key > root.tree, and also that root's
+	 * children are valid binomial trees of degrees 0,1,...,degree-1.
+	 * 
 	 */
 	private boolean isValidTree(HeapNode root, int degree) {
+		// If root's degree is wrong result is obviously false
 		if (root.getDegree() != degree) {
 			return false;
 		}
+		
+		// If root has no children it is valid
 		if (degree == 0) {
 			return true;
 		}
-		int key = root.getKey();
-		HeapNode child = root.getChild().getSibling();
+		
+		int key = root.getKey(); // For comparisons
+		HeapNode child = root.getChild().getNext(); // Minimal degree child of root
 
-		for (int i = 0; i < degree; i++) {
+		for (int i = 0; i < degree; i++) { // For every child
+			// Check child should be below root
 			if (child.getKey() < key) {
 				return false;
 			}
+			
+			// Check child is in itself valid
 			if (!isValidTree(child, i)) {
 				return false;
 			}
-			child = child.getSibling();
+			child = child.getNext();
 		}
+		
+		// All is well
 		return true;
 	}
 
@@ -520,8 +669,8 @@ public class BinomialHeap {
 	 *
 	 */
 	public void delete(int value) {
-		decreaseKey(value, -1);
-		deleteMin();
+		decreaseKey(value, -1); // Makes node with specified key the new minimum
+		deleteMin(); // Deletes the minimum
 	}
 
 	/**
@@ -530,115 +679,30 @@ public class BinomialHeap {
 	 * If the heap doen't contain an element with value oldValue, don't change
 	 * the heap. Otherwise decrease the value of the element whose value is
 	 * oldValue to be newValue. Assume newValue <= oldValue.
+	 * 
 	 */
 	public void decreaseKey(int oldValue, int newValue) {
-		HeapNode x = hashMap.remove(oldValue);
-		hashMap.put(newValue, x);
-
-		x.setKey(newValue);
+		HeapNode x = hashMap.remove(oldValue); // Remove node with specified value from tree
+		hashMap.put(newValue, x); // Add one with new value
+		x.setKey(newValue); // Change value
+		
+		// Switch around values if necessary
 		HeapNode y = x.getParent();
-
-		while (y != null && x.getKey() < y.getKey()) {
+		while (y != null && x.getKey() < y.getKey()) { // While current state is invalid
+			// Switch the keys
 			x.setKey(y.getKey());
 			y.setKey(newValue);
+			
+			// Go up
 			x = y;
 			y = y.getParent();
 		}
-
+		// Heap is now valid
+		
+		// Update min if necessary
 		if (newValue < this.min.getKey()) {
 			this.min = x;
 		}
-	}
-
-	public String toString() {
-		return Integer.toBinaryString(size);
-	}
-
-	/**
-	 * public class HeapNode
-	 * 
-	 * If you wish to implement classes other than BinomialHeap (for example
-	 * HeapNode), do it in this file, not in another file
-	 * 
-	 */
-	public class HeapNode {
-		private HeapNode parent;
-		private HeapNode child;
-		private HeapNode sibling;
-		private int key;
-		private int degree;
-
-		public HeapNode getParent() {
-			return parent;
-		}
-
-		public void setParent(HeapNode parent) {
-			this.parent = parent;
-		}
-
-		public HeapNode getChild() {
-			return child;
-		}
-
-		public void setChild(HeapNode child) {
-			this.child = child;
-		}
-
-		public HeapNode getSibling() {
-			return sibling;
-		}
-
-		public void setSibling(HeapNode sibling) {
-			this.sibling = sibling;
-		}
-
-		public int getDegree() {
-			return degree;
-		}
-
-		public void setDegree(int degree) {
-			this.degree = degree;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			HeapNode other = (HeapNode) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
-			if (key != other.key)
-				return false;
-			return true;
-		}
-
-		public int getKey() {
-			return this.key;
-		}
-
-		public void setKey(int key) {
-			this.key = key;
-		}
-
-		public HeapNode(int key) {
-			this.parent = null;
-			this.child = null;
-			this.sibling = null;
-			this.key = key;
-			this.degree = 0;
-		}
-
-		private BinomialHeap getOuterType() {
-			return BinomialHeap.this;
-		}
-
-		public String toString() {
-			return this.getKey() + ", child: " + (this.child == null ? "null" : this.child.getKey()) + ", sibling "
-					+ (this.sibling == null ? "null" : this.sibling.getKey());
-		}
+		// All done
 	}
 }
