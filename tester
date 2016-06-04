@@ -320,12 +320,11 @@ public class BinomialHeapTest {
 
         protected void test() {
 
-            int[] vals = createValues(100);
+            int[] vals = createValues(10);
             BinomialHeap heap1 = new BinomialHeap();
 
             for (int v : vals) {
                 heap1.insert(v);
-                System.out.println(heap1.toString());
             }
             Arrays.sort(vals);
             for (int v : vals) {
@@ -636,7 +635,7 @@ public class BinomialHeapTest {
 
         for (Test test : tests) {
             try {
-                executor.submit(test).get(5, TimeUnit.SECONDS);
+                executor.submit(test).get(1000, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
                 test.setFailed("Timed out. Infinite loop");
             } catch (Exception e) {
