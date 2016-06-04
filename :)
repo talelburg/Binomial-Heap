@@ -310,7 +310,7 @@ public class BinomialHeap {
 	}
 
 	/**
-	 * public void meld (BinomialHeap heap2)
+	 * public void meld(BinomialHeap heap2)
 	 *
 	 * Meld the heap with heap2
 	 *
@@ -484,6 +484,7 @@ public class BinomialHeap {
 					
 					// There will definitely be carry
 					carry = link(root1, root2);
+					
 					if (root3 != null) { // There was carry - add it to new heap
 						if (newHeap.empty()) { // If this is the first tree to be inserted to new heap
 							// Set root3 as only root, and increase size so new heap is no longer empty
@@ -503,7 +504,7 @@ public class BinomialHeap {
 					}
 				}
 			}
-			if (carry != null) { // Therewas carry in last step, need to add it
+			if (carry != null) { // There was carry in last step, need to add it
 				if (newHeap.empty()) { // If this is the first tree to be inserted to new heap
 					// Set carry as only root, and increase size so new heap is no longer empty
 					carry.setNext(carry);
