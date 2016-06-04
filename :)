@@ -278,7 +278,7 @@ public class BinomialHeap {
 	 * degree k.
 	 * 
 	 */
-	private HeapNode link(HeapNode root1, HeapNode root2) {
+	private static HeapNode link(HeapNode root1, HeapNode root2) {
 		// Make sure root1.key < root2.key
 		if (root1.getKey() > root2.getKey()) {
 			// Reverse root1 and root2 pointers
